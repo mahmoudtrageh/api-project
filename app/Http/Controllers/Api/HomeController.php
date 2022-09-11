@@ -257,19 +257,19 @@ class HomeController extends Controller
     public function create_hotel(Request $request)
     {
         $v = validator($request->all(), [
-            'user_id' => 'required',
-            'hotel_id' => 'required',
+            'name' => 'required|unique:hotels,name',
+            'price' => 'required',
         ],
             [
-                'user_id.required' => 'enter user',
-                'hotel_id.required' => 'enter hotel',
+                'name.required' => 'enter name',
+                'price.required' => 'enter price',
             ]);
         if ($v->fails()) {
          $error = $v->errors()->first();
-         if($error=='enter user')
-         $error='برجاء إدخال المستخدم';
-        else if($error=='enter hotel')
-         $error='برجاء إدخال الفندق';
+         if($error=='enter name')
+         $error='برجاء إدخال الاسم';
+        else if($error=='enter price')
+         $error='برجاء إدخال السعر';
         else
         $error = 'حدث خطأ';
         
@@ -281,26 +281,73 @@ class HomeController extends Controller
            
             return response()->json($result);
         }
-        $hotel = Hotel::where('id', $request->hotel_id)->first();
-        $user = User::where('id', $request->user_id)->first();
 
-        if ($user != null && $hotel != null && $booking = Booking::create($request->all())) {
+        $hotel = Hotel::create($request->all());
+        $images = $request->images;
+        $facilities = $request->facilities;
+
+        $hotel->hotel_images()->sync($images);
+        $hotel->hotel_facilities()->sync($facilities);
+
+       
+
+        if ($hotel->save()) {
          
             $result = [
                 'status' =>
                     [
                     'type' => '1',
-                     'title' => ['ar'=>'تم إنشاء الحجز بنجاح','en'=>'succefully create']
+                     'title' => ['ar'=>'تم إنشاء الفندق بنجاح','en'=>'succefully create']
                     ]
             ];
-        } else if ($hotel == null || $user == null) {
-          $result = [
-              'status' =>
-                  [
-                  'type' => '0',
-                   'title' => ['ar'=>'من فضلك التأكد من صحة بياناتك','en'=>'please make sure you add correct data']
-                  ]
-          ];
+      } else {
+            $result = [
+                'status' =>
+                    [
+                    'type' => '0',
+                     'title' =>[
+                       'ar'=>'حدث خطأ اثناء إنشاء الحجز',
+                       'en'=>'error cannot create'
+                       ]
+                    ]
+            ];
+        }
+        return response()->json($result);
+    }
+
+    public function create_facility(Request $request)
+    {
+        $v = validator($request->all(), [
+            'name' => 'required|unique:hotels,name',
+        ],
+            [
+                'name.required' => 'enter name',
+            ]);
+        if ($v->fails()) {
+         $error = $v->errors()->first();
+         if($error=='enter name')
+         $error='برجاء إدخال الاسم';
+        else
+        $error = 'حدث خطأ';
+        
+            $result = 
+            [
+                'status' =>
+                    ['type' => '0', 'title' => ['en'=>$v->errors()->first(),'ar'=>$error]]
+            ];
+           
+            return response()->json($result);
+        }
+
+        if (facility::create($request->all())) {
+         
+            $result = [
+                'status' =>
+                    [
+                    'type' => '1',
+                     'title' => ['ar'=>'تم إنشاء الميزة بنجاح','en'=>'succefully create']
+                    ]
+            ];
       } else {
             $result = [
                 'status' =>

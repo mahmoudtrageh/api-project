@@ -12,18 +12,22 @@ class Hotel extends Model
 
     protected $fillable = [
         'name',
-        'country',
-        'img'
+        'description',
+        'price',
+        'address',
+        'longitude',
+        'latitude',
+        'rate'
     ];
 
     public function hotel_images()
     {
-        return $this->hasMany(hotel_image::class);
+        return $this->belongsToMany(hotel_image::class, 'hotel_images', 'hotel_id', 'image');
     }
 
     public function hotel_facilities()
     {
-        return $this->hasMany(hotel_facility::class);
+        return $this->belongsToMany(hotel_facility::class, 'hotel_facilities', 'hotel_id', 'facility_id');
     }
 
     public static function getByDistance($lat, $lng, $distance)

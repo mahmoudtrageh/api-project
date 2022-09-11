@@ -16,11 +16,11 @@ class hotel_facility extends Model
 
      public function hotel()
      {
-         return $this->belongsTo(Hotel::class);
+         return $this->hasMany(Hotel::class);
      }
 
      public function facility()
      {
-         return $this->belongsTo(Facility::class);
+         return $this->hasMany(Facility::class);
      }
 }
